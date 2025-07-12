@@ -48,9 +48,8 @@ export default function Home() {
     try {
       const apiEndpoint = '/api/screenshot-simple';
 
-      // Add timeout to prevent hanging
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000); 
 
       const response = await fetch(apiEndpoint, {
         method: 'POST',
@@ -72,15 +71,12 @@ export default function Home() {
       clearInterval(progressInterval);
       setLoadingProgress(100);
 
-      // Calculate API response time (should be fast)
       const endTime = Date.now();
       const apiTime = ((endTime - startTime) / 1000).toFixed(1);
       setGenerationTime(apiTime);
 
-      // Set image loading state
       console.log('Setting screenshot URL:', data.screenshot);
 
-      // Test if the screenshot URL is accessible
       try {
         const testResponse = await fetch(data.screenshot, { method: 'HEAD' });
         console.log('Screenshot URL test response:', testResponse.status);
@@ -94,14 +90,12 @@ export default function Home() {
       setImageLoading(true);
       setScreenshot(data.screenshot);
 
-      // Set timeout for image loading
       const imageTimeout = setTimeout(() => {
         console.warn('Image loading timeout after 10 seconds');
         setImageLoading(false);
         setError('Image loading timed out. The screenshot service might be slow. Please try again.');
-      }, 10000); // 10 second timeout for image loading
+      }, 10000);
 
-      // Store timeout ID to clear it later
       window.imageLoadTimeout = imageTimeout;
 
       setHistory(prev => {
@@ -137,7 +131,6 @@ export default function Home() {
   const handleImageLoad = () => {
     console.log('Image loaded successfully');
 
-    // Clear timeout
     if (window.imageLoadTimeout) {
       clearTimeout(window.imageLoadTimeout);
       window.imageLoadTimeout = null;
@@ -145,7 +138,6 @@ export default function Home() {
 
     setImageLoading(false);
 
-    // Calculate total time from start to image loaded
     if (startTime) {
       const totalEndTime = Date.now();
       const totalTimeTaken = ((totalEndTime - startTime) / 1000).toFixed(1);
@@ -158,7 +150,6 @@ export default function Home() {
     console.error('Image failed to load:', e);
     console.error('Image URL:', screenshot);
 
-    // Clear timeout
     if (window.imageLoadTimeout) {
       clearTimeout(window.imageLoadTimeout);
       window.imageLoadTimeout = null;
@@ -181,21 +172,22 @@ export default function Home() {
     setImageLoading(false);
     setError('');
 
-    // Clear timeouts
     if (window.imageLoadTimeout) {
       clearTimeout(window.imageLoadTimeout);
       window.imageLoadTimeout = null;
     }
   };
 
+  const generateHash = () => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  };
+
   const downloadImage = async () => {
     try {
       setError('');
       setIsDownloading(true);
+      const hash = generateHash();
 
-      // Method 1: Try using our proxy API first
-
-      // Method 1: Try using our proxy API
       try {
         const response = await fetch('/api/download', {
           method: 'POST',
@@ -210,20 +202,19 @@ export default function Home() {
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = `screenshot-${new Date().getTime()}.png`;
+          link.download = `screenshot-${hash}.png`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
 
           setIsDownloading(false);
-          return; // Success!
+          return; 
         }
       } catch (proxyError) {
         console.warn('Proxy download failed:', proxyError);
       }
 
-      // Method 2: Try direct fetch (may fail due to CORS)
       try {
         const response = await fetch(screenshot, {
           mode: 'cors',
@@ -237,23 +228,22 @@ export default function Home() {
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = `screenshot-${new Date().getTime()}.png`;
+          link.download = `screenshot-${hash}.png`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
 
           setIsDownloading(false);
-          return; // Success!
+          return; 
         }
       } catch (directError) {
         console.warn('Direct download failed:', directError);
       }
 
-      // Method 3: Fallback - open in new tab
       const link = document.createElement('a');
       link.href = screenshot;
-      link.download = `screenshot-${new Date().getTime()}.png`;
+      link.download = `screenshot-${hash}.png`;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
       link.click();
@@ -423,7 +413,7 @@ export default function Home() {
               <button
                 onClick={downloadImage}
                 disabled={isDownloading}
-                className={`px-4 py-2 text-white rounded-lg transition-all flex items-center gap-2 download-btn ${
+                className={`px-4 py-2 text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer download-btn ${
                   isDownloading
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-green-600 hover:bg-green-700'

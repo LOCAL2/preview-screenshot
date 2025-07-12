@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 
+// Generate random hash for filename
+const generateHash = () => {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
 export async function POST(request) {
   try {
     const { imageUrl } = await request.json();
@@ -40,13 +45,16 @@ export async function POST(request) {
 
     console.log(`Image downloaded successfully. Size: ${imageBuffer.byteLength} bytes, Type: ${contentType}`);
 
+    // Generate hash for filename
+    const hash = generateHash();
+
     // Return the image with proper headers for download
     return new NextResponse(imageBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
         'Content-Length': imageBuffer.byteLength.toString(),
-        'Content-Disposition': `attachment; filename="screenshot-${Date.now()}.png"`,
+        'Content-Disposition': `attachment; filename="screenshot-${hash}.png"`,
         'Cache-Control': 'no-cache',
       },
     });
