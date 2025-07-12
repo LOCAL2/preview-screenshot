@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 
 export default function ImageModal({ isOpen, onClose, imageUrl, imageAlt = "Screenshot" }) {
   const [zoom, setZoom] = useState(1);
@@ -138,11 +137,9 @@ export default function ImageModal({ isOpen, onClose, imageUrl, imageAlt = "Scre
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
       >
-        <Image
+        <img
           src={imageUrl}
           alt={imageAlt}
-          width={1200}
-          height={800}
           className="max-w-none transition-transform duration-200 ease-out select-none"
           style={{
             transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
@@ -153,7 +150,6 @@ export default function ImageModal({ isOpen, onClose, imageUrl, imageAlt = "Scre
             // Reset position when image loads
             setPosition({ x: 0, y: 0 });
           }}
-          unoptimized={true}
         />
       </div>
 

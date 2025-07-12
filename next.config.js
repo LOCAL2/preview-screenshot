@@ -10,7 +10,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'free.pagepeeker.com',
+        hostname: 'image.thum.io',
         port: '',
         pathname: '/**',
       },

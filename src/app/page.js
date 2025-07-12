@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import LoadingSpinner from './components/LoadingSpinner';
 import ImageModal from './components/ImageModal';
 
@@ -18,6 +17,7 @@ export default function Home() {
   const [totalTime, setTotalTime] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
 
 
   const handleSubmit = async (e) => {
@@ -46,14 +46,22 @@ export default function Home() {
     }, 200);
 
     try {
-      const apiEndpoint = '/api/screenshot-simple'; // ใช้ API ที่เสถียรที่สุด
+      const apiEndpoint = '/api/screenshot-simple';
+
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ url: processedUrl }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -70,8 +78,31 @@ export default function Home() {
       setGenerationTime(apiTime);
 
       // Set image loading state
+      console.log('Setting screenshot URL:', data.screenshot);
+
+      // Test if the screenshot URL is accessible
+      try {
+        const testResponse = await fetch(data.screenshot, { method: 'HEAD' });
+        console.log('Screenshot URL test response:', testResponse.status);
+        if (!testResponse.ok) {
+          console.warn('Screenshot URL returned error:', testResponse.status);
+        }
+      } catch (testError) {
+        console.warn('Screenshot URL test failed:', testError.message);
+      }
+
       setImageLoading(true);
       setScreenshot(data.screenshot);
+
+      // Set timeout for image loading
+      const imageTimeout = setTimeout(() => {
+        console.warn('Image loading timeout after 10 seconds');
+        setImageLoading(false);
+        setError('Image loading timed out. The screenshot service might be slow. Please try again.');
+      }, 10000); // 10 second timeout for image loading
+
+      // Store timeout ID to clear it later
+      window.imageLoadTimeout = imageTimeout;
 
       setHistory(prev => {
         const newEntry = { url: processedUrl, timestamp: new Date().toISOString() };
@@ -83,7 +114,12 @@ export default function Home() {
       });
     } catch (err) {
       clearInterval(progressInterval);
-      setError(err.message);
+
+      if (err.name === 'AbortError') {
+        setError('Screenshot generation timed out. The website might be slow to load. Please try again.');
+      } else {
+        setError(err.message || 'Failed to generate screenshot. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -99,6 +135,14 @@ export default function Home() {
   };
 
   const handleImageLoad = () => {
+    console.log('Image loaded successfully');
+
+    // Clear timeout
+    if (window.imageLoadTimeout) {
+      clearTimeout(window.imageLoadTimeout);
+      window.imageLoadTimeout = null;
+    }
+
     setImageLoading(false);
 
     // Calculate total time from start to image loaded
@@ -106,12 +150,22 @@ export default function Home() {
       const totalEndTime = Date.now();
       const totalTimeTaken = ((totalEndTime - startTime) / 1000).toFixed(1);
       setTotalTime(totalTimeTaken);
+      console.log(`Total time: ${totalTimeTaken}s`);
     }
   };
 
-  const handleImageError = () => {
+  const handleImageError = (e) => {
+    console.error('Image failed to load:', e);
+    console.error('Image URL:', screenshot);
+
+    // Clear timeout
+    if (window.imageLoadTimeout) {
+      clearTimeout(window.imageLoadTimeout);
+      window.imageLoadTimeout = null;
+    }
+
     setImageLoading(false);
-    setError('Failed to load screenshot image. Please try again.');
+    setError('Failed to load screenshot image. The service might be slow or unavailable. Please try again.');
   };
 
   const openModal = () => {
@@ -120,6 +174,18 @@ export default function Home() {
 
   const closeModal = () => {
     setIsModalOpen(false);
+  };
+
+  const cancelLoading = () => {
+    setLoading(false);
+    setImageLoading(false);
+    setError('');
+
+    // Clear timeouts
+    if (window.imageLoadTimeout) {
+      clearTimeout(window.imageLoadTimeout);
+      window.imageLoadTimeout = null;
+    }
   };
 
   const downloadImage = async () => {
@@ -217,6 +283,8 @@ export default function Home() {
           <form onSubmit={handleSubmit} className="space-y-6">
 
 
+
+
             <div>
               <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
                 Website URL
@@ -259,6 +327,16 @@ export default function Home() {
                   ></div>
                 </div>
               </div>
+
+              {/* Cancel button */}
+              <div className="mt-4 text-center">
+                <button
+                  onClick={cancelLoading}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 
@@ -294,23 +372,31 @@ export default function Home() {
 
             {/* Image loading state */}
             {imageLoading && (
-              <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center h-96">
+              <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50 flex flex-col items-center justify-center h-96">
                 <LoadingSpinner message="Loading screenshot..." />
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-600 mb-2">
+                    Taking longer than expected?
+                  </p>
+                  <button
+                    onClick={cancelLoading}
+                    className="px-4 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
 
             {/* Screenshot image */}
             <div className={`border border-gray-200 rounded-lg overflow-hidden ${imageLoading ? 'hidden' : 'block'}`}>
-              <Image
+              <img
                 src={screenshot}
                 alt="Website screenshot"
-                width={1200}
-                height={800}
                 className="w-full h-auto"
                 onLoad={handleImageLoad}
                 onError={handleImageError}
                 style={{ display: imageLoading ? 'none' : 'block' }}
-                unoptimized={true}
               />
             </div>
             <div className="mt-4 flex gap-4">

@@ -27,13 +27,13 @@ export async function POST(request) {
       );
     }
 
-    // Use truly free screenshot services that don't require API keys
+    // Use truly free screenshot services that don't require API keys (avoid PagePeeker)
     const screenshotServices = [
       // Service 1: Mini S-Shot (Russian free service - most reliable)
       `https://mini.s-shot.ru/1200x800/PNG/1200/Z100/?${encodeURIComponent(processedUrl)}`,
 
-      // Service 2: PagePeeker (free tier)
-      `https://free.pagepeeker.com/v2/thumbs.php?size=l&url=${encodeURIComponent(processedUrl)}`,
+      // Service 2: Thum.io (reliable alternative)
+      `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(processedUrl)}`,
 
       // Service 3: Thumbnail.ws (free API)
       `https://api.thumbnail.ws/api/simplescreenshot/free/png?url=${encodeURIComponent(processedUrl)}&width=1200`,
@@ -71,7 +71,7 @@ export async function POST(request) {
       originalUrl: processedUrl,
       timestamp: new Date().toISOString(),
       service: apiUrl.includes('s-shot.ru') ? 'mini-s-shot-ru' :
-               apiUrl.includes('pagepeeker') ? 'pagepeeker' :
+               apiUrl.includes('thum.io') ? 'thum-io' :
                apiUrl.includes('thumbnail.ws') ? 'thumbnail-ws' : 'unknown'
     });
 

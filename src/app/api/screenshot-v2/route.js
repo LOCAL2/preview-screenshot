@@ -27,7 +27,7 @@ export async function POST(request) {
       );
     }
 
-    // Use truly free screenshot services that don't require API keys
+    // Use truly free screenshot services that don't require API keys (avoid PagePeeker)
     const screenshotServices = [
       // Service 1: Mini S-Shot (most reliable free service)
       {
@@ -36,10 +36,10 @@ export async function POST(request) {
         method: 'GET'
       },
 
-      // Service 2: PagePeeker (free tier)
+      // Service 2: Thum.io (reliable alternative)
       {
-        name: 'pagepeeker',
-        url: `https://free.pagepeeker.com/v2/thumbs.php?size=l&url=${encodeURIComponent(processedUrl)}`,
+        name: 'thum-io',
+        url: `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(processedUrl)}`,
         method: 'GET'
       },
 

@@ -27,35 +27,42 @@ export async function POST(request) {
       );
     }
 
-    console.log('Generating screenshot for:', processedUrl);
+    console.log('Fast screenshot generation for:', processedUrl);
 
-    // Use reliable screenshot services (avoid PagePeeker due to redirect issues)
-    const freeServices = [
-      // Service 1: Mini S-Shot (most reliable)
-      `https://mini.s-shot.ru/1024x768/PNG/1024/Z100/?${encodeURIComponent(processedUrl)}`,
+    // Use fast and reliable services (avoid PagePeeker due to redirect issues)
+    const fastServices = [
+      // Service 1: Mini S-Shot with small size for speed
+      {
+        name: 'mini-s-shot-ru-small',
+        url: `https://mini.s-shot.ru/800x600/PNG/800/Z100/?${encodeURIComponent(processedUrl)}`,
+        priority: 1
+      },
 
-      // Service 2: Alternative service
-      `https://image.thum.io/get/width/1024/crop/768/${encodeURIComponent(processedUrl)}`,
-
-      // Service 3: Backup service
-      `https://api.thumbnail.ws/api/simplescreenshot/free/png?url=${encodeURIComponent(processedUrl)}&width=1024`
+      // Service 2: Thum.io (fast service)
+      {
+        name: 'thum-io',
+        url: `https://image.thum.io/get/width/800/crop/600/${encodeURIComponent(processedUrl)}`,
+        priority: 2
+      }
     ];
 
-    // Use Mini S-Shot (most reliable)
-    const screenshotUrl = freeServices[0];
-
+    // Use Mini S-Shot with smaller size for speed
+    const selectedService = fastServices[0];
+    const screenshotUrl = selectedService.url;
+    
+    console.log(`Using fast service: ${selectedService.name}`);
     console.log('Screenshot URL:', screenshotUrl);
 
     return NextResponse.json({
       screenshot: screenshotUrl,
       originalUrl: processedUrl,
       timestamp: new Date().toISOString(),
-      service: 'mini-s-shot-ru',
-      note: 'Using reliable service without redirect issues'
+      service: selectedService.name,
+      note: 'Using optimized fast service with smaller image size'
     });
 
   } catch (error) {
-    console.error('Screenshot API error:', error);
+    console.error('Fast Screenshot API error:', error);
     return NextResponse.json(
       { error: 'Failed to generate screenshot: ' + error.message },
       { status: 500 }
@@ -66,9 +73,9 @@ export async function POST(request) {
 export async function GET() {
   return NextResponse.json(
     { 
-      message: 'Simple Screenshot API endpoint',
+      message: 'Fast Screenshot API endpoint',
       usage: 'Send POST request with { "url": "https://example.com" }',
-      method: 'Uses query parameters to avoid Apache Tomcat encoding issues'
+      features: ['Optimized for speed', 'Smaller image sizes', 'Fast services only']
     },
     { status: 200 }
   );

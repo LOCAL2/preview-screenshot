@@ -10,7 +10,8 @@ export default function LoadingSpinner({ message = "Generating screenshot..." })
       {/* Loading text with animation */}
       <div className="mt-4 text-center">
         <p className="text-lg font-medium text-blue-600 animate-pulse">{message}</p>
-        <p className="text-sm text-gray-500 mt-1">This may take a few seconds...</p>
+        <p className="text-sm text-gray-500 mt-1">Usually takes 3-8 seconds...</p>
+        <p className="text-xs text-gray-400 mt-1">Will timeout after 10 seconds if no response</p>
       </div>
 
       {/* Progress dots */}
