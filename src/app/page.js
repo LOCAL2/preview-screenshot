@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import LoadingSpinner from './components/LoadingSpinner';
 import ImageModal from './components/ImageModal';
 
@@ -300,13 +301,16 @@ export default function Home() {
 
             {/* Screenshot image */}
             <div className={`border border-gray-200 rounded-lg overflow-hidden ${imageLoading ? 'hidden' : 'block'}`}>
-              <img
+              <Image
                 src={screenshot}
                 alt="Website screenshot"
+                width={1200}
+                height={800}
                 className="w-full h-auto"
                 onLoad={handleImageLoad}
                 onError={handleImageError}
                 style={{ display: imageLoading ? 'none' : 'block' }}
+                unoptimized={true}
               />
             </div>
             <div className="mt-4 flex gap-4">
