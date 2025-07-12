@@ -1,0 +1,27 @@
+{
+  "name": "preview-screenshort",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test-api": "node test-api.js",
+    "test-performance": "node performance-test.js",
+    "test-validity": "node test-screenshot-validity.js"
+  },
+  "dependencies": {
+    "next": "^15.3.5",
+    "node-fetch": "^3.3.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.5",
+    "tailwindcss": "^4"
+  }
+}
